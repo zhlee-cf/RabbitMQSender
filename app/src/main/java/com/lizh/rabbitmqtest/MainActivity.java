@@ -35,6 +35,7 @@ public class MainActivity extends AppCompatActivity {
     private ConnectionFactory factory;
     private static final String EXCHANGE_NAME = "durable_3";
     private TextView tv;
+    private SimpleDateFormat ft;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -43,6 +44,7 @@ public class MainActivity extends AppCompatActivity {
         button = (Button) findViewById(R.id.publish);
         et = (EditText) findViewById(R.id.text);
         tv = (TextView) findViewById(R.id.textView);
+        ft = new SimpleDateFormat("HH:mm:ss");
         setupConnectionFactory();
         subscribe();
         button.setOnClickListener(new View.OnClickListener() {
@@ -74,8 +76,6 @@ public class MainActivity extends AppCompatActivity {
                             Message msg = handler.obtainMessage();
                             msg.obj = message;
                             handler.sendMessage(msg);
-
-
 //                            channel.basicAck(envelope.getDeliveryTag(), true);
                         }
                     };
@@ -97,6 +97,7 @@ public class MainActivity extends AppCompatActivity {
                     channel.exchangeDeclare(EXCHANGE_NAME, "fanout", durable);
 //                   channel.queueDeclare(queue_name, durable, false, false, null); //声明消息队列，且为可持久化的
                     String message = et.getText().toString().trim();
+                    message = "发送时间==" + ft.format(new Date()) + "**" + message;
                     //将队列设置为持久化之后，还需要将消息也设为可持久化的，MessageProperties.PERSISTENT_TEXT_PLAIN
                     channel.basicPublish(EXCHANGE_NAME, "", MessageProperties.PERSISTENT_TEXT_PLAIN, message.getBytes());
                     System.out.println("Send message:" + message);
@@ -130,9 +131,7 @@ public class MainActivity extends AppCompatActivity {
         @Override
         public void handleMessage(Message msg) {
             super.handleMessage(msg);
-            Date now = new Date();
-            SimpleDateFormat ft = new SimpleDateFormat("hh:mm:ss");
-            tv.append(ft.format(now) + ' ' + msg.obj + '\n');
+            tv.append("" + msg.obj + '\n');
         }
     };
 }
